@@ -3,8 +3,7 @@ Webpage built using Flask. CS50 Problem Set 9.
 
 Implement a website via which users can “buy” and “sell” stocks, à la the below.
 
-
-<img width="1318" alt="Screenshot 2024-03-21 at 18 57 55" src="https://github.com/cmartinezal/finance/assets/84383847/77d33e91-cf51-4d91-8e86-7554fa748418">
+<img width="1357" alt="Screenshot 2024-03-22 at 14 54 02" src="https://github.com/cmartinezal/finance/assets/84383847/f147ec5e-a2d5-4665-9803-192cbf1afcdd">
 
 
 ## Background
