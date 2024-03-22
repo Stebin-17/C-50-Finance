@@ -87,3 +87,13 @@ def lookup(symbol):
 def usd(value):
     """Format value as USD."""
     return f"${value:,.2f}"
+
+
+def format_stock_prices(stock_data):
+    """Format Stock prices"""
+
+    for _, stock in enumerate(stock_data):
+        stock['price'] = usd(stock['price'])
+        stock['total_price'] = usd(stock['total_price'])
+
+    return stock_data

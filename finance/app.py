@@ -5,7 +5,7 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd
+from helpers import apology, login_required, lookup, usd, format_stock_prices
 
 # Configure application
 app = Flask(__name__)
@@ -20,16 +20,6 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///finance.db")
-
-
-def format_stock_prices(stock_data):
-    """Format Stock prices"""
-
-    for _, stock in enumerate(stock_data):
-        stock['price'] = usd(stock['price'])
-        stock['total_price'] = usd(stock['total_price'])
-
-    return stock_data
 
 
 @app.after_request
