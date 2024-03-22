@@ -184,3 +184,6 @@ Also test some unexpected usage, as by
 - trying to sell more shares than a user has,
 - inputting an invalid stock symbol, and
 - including potentially dangerous characters like ' and ; in SQL queries.
+
+<img width="1191" alt="Screenshot 2024-03-21 at 18 58 21" src="https://github.com/cmartinezal/finance/assets/84383847/3a19e950-234a-4233-81c9-f423f2bde867">
+
