@@ -67,21 +67,21 @@ def buy():
         shares = request.form.get("shares")
 
         if not symbol:
-            return apology("must provide symbol", 400)
-        elif not shares:
-            return apology("must provide shares", 400)
-        elif not shares.isdigit():
-            return apology("num of shares not valid", 400)
+            return apology("must provide symbol")
+        if not shares:
+            return apology("must provide shares")
+        if not shares.isdigit():
+            return apology("num of shares not valid")
 
         shares = int(float(shares))
 
         if shares <= 0:
-            return apology("num of shares not valid", 400)
+            return apology("num of shares not valid")
 
         stock_data = lookup(symbol)
 
         if not stock_data:
-            return apology("Symbol not found", 400)
+            return apology("Symbol not found")
 
         user_data = db.execute(
             "SELECT cash FROM users WHERE id = ?", session["user_id"])
@@ -90,7 +90,7 @@ def buy():
         cash = user_data[0]["cash"] - total_price
 
         if user_data[0]["cash"] < total_price:
-            return apology("Not enough cash to complete the purchase", 400)
+            return apology("Not enough cash to complete the purchase")
 
         db.execute(
             "INSERT INTO stocks (user_id, symbol, price, shares, total_price) \
@@ -138,11 +138,11 @@ def login():
         password = request.form.get("password")
 
         if not username:
-            return apology("must provide username", 400)
+            return apology("must provide username")
 
         # Ensure password was submitted
-        elif not password:
-            return apology("must provide password", 400)
+        if not password:
+            return apology("must provide password")
 
         # Query database for username
         rows = db.execute(
@@ -153,7 +153,7 @@ def login():
         if len(rows) != 1 or not check_password_hash(
             rows[0]["hash"], password
         ):
-            return apology("invalid username and/or password", 400)
+            return apology("invalid username and/or password")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -162,8 +162,7 @@ def login():
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("login.html")
+    return render_template("login.html")
 
 
 @app.route("/logout")
@@ -186,7 +185,7 @@ def quote():
         symbol = request.form.get("symbol")
 
         if not symbol:
-            return apology("must provide a symbol", 400)
+            return apology("must provide a symbol")
 
         quote_data = lookup(symbol)
 
@@ -195,7 +194,7 @@ def quote():
                                    price=usd(quote_data['price']),
                                    symbol=quote_data['symbol'])
 
-        return apology("Symbol not found", 400)
+        return apology("Symbol not found")
 
     return render_template("quote.html")
 
@@ -213,20 +212,20 @@ def register():
         confirmation = request.form.get("confirmation")
 
         if not username:
-            return apology("must provide username", 400)
-        elif not password:
-            return apology("must provide password", 400)
-        elif not confirmation:
-            return apology("must confirm password", 400)
-        elif password != confirmation:
-            return apology("password and confirmation do not match", 400)
+            return apology("must provide username")
+        if not password:
+            return apology("must provide password")
+        if not confirmation:
+            return apology("must confirm password")
+        if password != confirmation:
+            return apology("password and confirmation do not match")
 
         existing_users = db.execute(
             "SELECT id FROM users WHERE username = ?", username
         )
 
         if len(existing_users) >= 1:
-            return apology("Username already exists", 400)
+            return apology("Username already exists")
 
         password_hash = generate_password_hash(password)
 
@@ -247,7 +246,7 @@ def add():
     if request.method == "POST":
         cash = request.form.get("cash")
         if not cash:
-            return apology("must provide cash", 400)
+            return apology("must provide cash")
 
         user_data = db.execute(
             "SELECT cash FROM users WHERE id = ?", session["user_id"])
@@ -273,16 +272,16 @@ def sell():
         shares = request.form.get("shares")
 
         if not symbol:
-            return apology("must provide symbol", 400)
-        elif not shares:
-            return apology("must provide shares", 400)
-        elif int(shares) <= 0:
-            return apology("num of shares not valid", 400)
+            return apology("must provide symbol")
+        if not shares:
+            return apology("must provide shares")
+        if int(shares) <= 0:
+            return apology("num of shares not valid")
 
         stock_data = lookup(symbol)
 
         if not stock_data:
-            return apology("Symbol not found", 400)
+            return apology("Symbol not found")
 
         user_data = db.execute(
             "SELECT SUM(s.shares) shares, SUM(s.total_price) price, u.cash FROM users u \
@@ -292,11 +291,11 @@ def sell():
             symbol)
 
         if not user_data:
-            return apology("Symbol not found", 400)
+            return apology("Symbol not found")
 
         shares = int(shares)
         if user_data[0]['shares'] < shares:
-            return apology("Not enough shares to complete the sale", 400)
+            return apology("Not enough shares to complete the sale")
 
         total_price = stock_data['price'] * shares
         new_cash = total_price + user_data[0]['cash']
@@ -319,4 +318,5 @@ def sell():
 
     user_stocks = db.execute(
         "SELECT DISTINCT symbol FROM stocks s WHERE s.user_id = ?", session["user_id"])
+
     return render_template("sell.html", stocks=user_stocks)
