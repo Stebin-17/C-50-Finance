@@ -1,10 +1,11 @@
 import os
 
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session,url_for
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
-
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
 from helpers import apology, login_required, lookup, usd, format_stock_prices
 
 # Configure application
@@ -20,6 +21,19 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///finance.db")
+
+#serializers for the tokens in mail sending
+app.secret_key = 'django-insecure-m07p(gc-q3xs!0%_q5o$r%l$=ejsu52uuyn$nm_^3o#&9cv1am'
+serializer = URLSafeTimedSerializer(app.secret_key)
+
+# Configuration for Flask-Mail
+app.config['MAIL_SERVER'] = '74.125.143.108'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'luxshtech258@gmail.com'
+app.config['MAIL_PASSWORD'] = 'pguapgpektxwwyak'
+
+mail = Mail(app)
 
 
 @app.after_request
@@ -209,6 +223,7 @@ def register():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+        email = request.form.get("email")
         confirmation = request.form.get("confirmation")
 
         if not username:
@@ -219,6 +234,10 @@ def register():
             return apology("must confirm password")
         if password != confirmation:
             return apology("password and confirmation do not match")
+        
+        if email =="" or email is None:
+            return apology("must provide email")
+
 
         existing_users = db.execute(
             "SELECT id FROM users WHERE username = ?", username
@@ -230,7 +249,7 @@ def register():
         password_hash = generate_password_hash(password)
 
         db.execute(
-            "INSERT INTO users (username, hash) VALUES (?, ?)", username, password_hash
+            "INSERT INTO users (username, hash ,email) VALUES (?, ? , ?)", username, password_hash,email
         )
 
         return redirect("/")
@@ -320,3 +339,78 @@ def sell():
         "SELECT DISTINCT symbol FROM stocks s WHERE s.user_id = ?", session["user_id"])
 
     return render_template("sell.html", stocks=user_stocks)
+
+
+
+# Function to send the password reset email
+def send_password_reset_email(email, token):
+    msg = Message('Password Reset Request', sender='luxshtech258@gmail.com', recipients=[email])
+    msg.body = f"To reset your password, visit the following link:\n{url_for('reset_password', token=token, _external=True)}"
+    mail.send(msg)
+
+# Route for requesting a password reset
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form.get("email")
+
+        # Check if the email exists in the database
+        user = db.execute("SELECT * FROM users WHERE email = ?", email)
+        print(user)
+
+        if user:
+            user = user[0]  # Get the first element of the list
+            # Generate a unique token
+            token = serializer.dumps(user["id"], salt="reset-password")
+
+            print(user)
+            print(token)
+
+            # Send the password reset email to the entered email address
+            send_password_reset_email(email, token)
+
+            flash("An email has been sent with instructions to reset your password.")
+            return redirect(url_for("login"))
+
+        flash("Email not found. Please enter a valid email address.")
+    
+    return render_template("forgot_password.html")
+
+@app.route("/reset_password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    try:
+        user_id = serializer.loads(token, salt="reset-password", max_age=3600)  # Token expires after 1 hour
+    except:
+        flash("The reset password link is invalid or has expired.")
+        return redirect(url_for("forgot_password"))
+
+    if request.method == "POST":
+        password = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+
+        if not password:
+            return apology("must provide password")
+        if not confirmation:
+            return apology("must confirm password")
+
+        if password != confirmation:
+            flash("Password and confirmation do not match.")
+        else:
+            # Update the user's password in the database
+            hashed_password = generate_password_hash(password)
+            db.execute("UPDATE users SET hash = ? WHERE id = ?", hashed_password, user_id)
+            flash("Your password has been successfully reset. Please log in with your new password.")
+            return redirect(url_for("login"))
+    
+    return render_template("reset_password.html", token=token)
+
+# Handling the route without the token parameter
+@app.route("/reset_password/", methods=["GET", "POST"])
+def reset_password_without_token():
+    flash("Invalid reset password link.")
+    return redirect(url_for("forgot_password"))
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
