@@ -19,26 +19,45 @@
                     <th scope="col">Shares</th>
                     <th scope="col">Price</th>
                     <th scope="col">TOTAL</th>
+                    <th scope="col">Buy/Sell</th> <!-- New column for buy/sell actions -->
                 </tr>
             </thead>
             <tbody>
                 {% for stock in stocks %}
                 <tr>
-                    <td>{{stock['symbol']}}</td>
-                    <td>{{stock['shares']}}</td>
-                    <td>{{stock['price']}}</td>
-                    <td>{{stock['total_price']}}</td>
+                    <td>{{ stock['symbol'] }}</td>
+                    <td>{{ stock['shares'] }}</td>
+                    <td>{{ stock['price'] }}</td>
+                    <td>{{ stock['total_price'] }}</td>
+                    <td>
+                        <!-- Form for buying more shares -->
+                        <form action="/buy" method="post">
+                            <input type="hidden" name="symbol" value="{{ stock['symbol'] }}">
+                            <input type="hidden" name="price" value="{{ stock['price'] }}">
+                            <input type="number" name="shares" placeholder="Shares">
+                            <button type="submit">Buy</button>
+                        </form>
+                        <!-- Form for selling shares -->
+                        <form action="/sell" method="post">
+                            <input type="hidden" name="symbol" value="{{ stock['symbol'] }}">
+                            <input type="hidden" name="price" value="{{ stock['price'] }}">
+                            <input type="number" name="shares" placeholder="Shares">
+                            <button type="submit">Sell</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
-                    <td class="border-0 fw-bold" colspan="3">Cash</td>
-                    <td class="border-0">{{cash}}</td>
+                    <td class="border-0 fw-bold" colspan="3">Remaining Cash</td>
+                    <td class="border-0">{{ cash }}</td>
+                    <td class="border-0"></td> <!-- Empty cell for alignment -->
                 </tr>
                 <tr>
-                    <td class="border-0 fw-bold" colspan="3">TOTAL</td>
-                    <td class="border-0">{{total}}</td>
+                    <td class="border-0 fw-bold" colspan="3">Wallet TOTAL</td>
+                    <td class="border-0">{{ total }}</td>
+                    <td class="border-0"></td> <!-- Empty cell for alignment -->
                 </tr>
             </tfoot>
         </table>
