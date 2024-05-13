@@ -5,8 +5,16 @@
 {% endblock %}
 
 {% block main %}
+    <style>
+        .action-select, .shares-input {
+            width: auto; /* Adjust width as needed */
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+
     <div class="d-flex align-items-center w-100 justify-content-center">
-        <h2 class="card-title p-5 flex-grow-1 text-center" style="margin-left:120px">Stock Summary</h2>
+        <h2 class="card-title p-5 flex-grow-1 text-center">Stock Summary</h2>
         <form action="/add" method="get">
             <button class="btn btn-primary p-2 px-4" type="submit">Add Cash</button>
         </form>
@@ -19,7 +27,7 @@
                     <th scope="col">Shares</th>
                     <th scope="col">Price</th>
                     <th scope="col">TOTAL</th>
-                    <th scope="col">Buy/Sell</th> <!-- New column for buy/sell actions -->
+                    <th scope="col">Action</th> <!-- Change column name to "Action" -->
                 </tr>
             </thead>
             <tbody>
@@ -30,19 +38,15 @@
                     <td>{{ stock['price'] }}</td>
                     <td>{{ stock['total_price'] }}</td>
                     <td>
-                        <!-- Form for buying more shares -->
-                        <form action="/buy" method="post">
+                        <select class="action-select">
+                            <option value="buy">Buy</option>
+                            <option value="sell">Sell</option>
+                        </select>
+                        <form class="transaction-form" action="/buy" method="post">
                             <input type="hidden" name="symbol" value="{{ stock['symbol'] }}">
                             <input type="hidden" name="price" value="{{ stock['price'] }}">
-                            <input type="number" name="shares" placeholder="Shares">
-                            <button type="submit">Buy</button>
-                        </form>
-                        <!-- Form for selling shares -->
-                        <form action="/sell" method="post">
-                            <input type="hidden" name="symbol" value="{{ stock['symbol'] }}">
-                            <input type="hidden" name="price" value="{{ stock['price'] }}">
-                            <input type="number" name="shares" placeholder="Shares">
-                            <button type="submit">Sell</button>
+                            <input type="number" name="shares" class="shares-input" placeholder="Shares">
+                            <button type="submit">Submit</button>
                         </form>
                     </td>
                 </tr>
@@ -62,4 +66,14 @@
             </tfoot>
         </table>
     </div>
+
+    <script>
+        document.querySelectorAll('.action-select').forEach(function(select) {
+            select.addEventListener('change', function() {
+                var action = this.value;
+                var form = this.parentElement.querySelector('.transaction-form');
+                form.action = '/' + action; // Set form action based on selected action
+            });
+        });
+    </script>
 {% endblock %}
